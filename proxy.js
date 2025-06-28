@@ -2,47 +2,59 @@ const express = require('express');
 const multer = require('multer');
 const axios = require('axios');
 const cors = require('cors');
-const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
-app.use(cors()); // ✅ Разрешаем CORS для всех доменов
+app.use(cors());
 
-const YOUR_API_KEY = 'TezIz5eXyJsMz7LvcXU_eg'; // ✅ Твой реальный API-ключ
+const YOUR_API_KEY = 'TezIz5eXyJsMz7LvcXU_eg';
 
-app.post('/proxy-transcribe', upload.single('file'), async (req, res) => {
+function bufferToHex(buffer) {
+  return Array.from(new Uint8Array(buffer))
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+app.post('/proxy-translate', upload.single('file'), async (req, res) => {
   try {
-    const form = new FormData();
-    const filePath = path.join(__dirname, req.file.path);
+    const originalPath = path.join(__dirname, req.file.path);
 
-    form.append('file', fs.createReadStream(filePath), {
-      filename: req.file.originalname,
-      contentType: req.file.mimetype,
-    });
+    const audioBuffer = fs.readFileSync(originalPath);
+    const hexAudio = bufferToHex(audioBuffer);
+
+    // ✅ JSON тело запроса
+    const payload = {
+      target_language: "kaz",         // 🎯 Измени язык при необходимости
+      audio: hexAudio
+    };
 
     const response = await axios.post(
-      'https://mangisoz.nu.edu.kz/external-api/v1/transcript/transcript_audio/',
-      form,
+      'https://mangisoz.nu.edu.kz/external-api/v1/translate/audio/?output_format=text',
+      payload,
       {
         headers: {
           Authorization: `Bearer ${YOUR_API_KEY}`,
-          ...form.getHeaders(),
+          'Content-Type': 'application/json',
         },
       }
     );
 
-    fs.unlink(filePath, () => {}); // ✅ Удаляем временный файл после использования
-
+    fs.unlinkSync(originalPath); // 🧹 Удалить temp файл
     res.json(response.data);
   } catch (err) {
-    console.error('❌ Proxy Error:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error("❌ Proxy Error:", err.message);
+    if (err.response) {
+      console.error("❌ Response body:", err.response.data);
+      res.status(err.response.status).json(err.response.data);
+    } else {
+      res.status(500).json({ error: err.message });
+    }
   }
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Proxy running on http://localhost:${PORT}`);
+  console.log(`✅ Translate proxy running on http://localhost:${PORT}`);
 });

@@ -152,22 +152,22 @@ async function recognizeSpeechJS(audioBlob) {
   formData.append("file", audioBlob, "audio.wav");
 
   try {
-    const response = await fetch("https://zvonok-proxy.onrender.com/transcribeAudio", {
-    method: "POST",
-    body: formData,
+    const response = await fetch("https://zvonok-proxy.onrender.com/proxy-translate", {
+      method: "POST",
+      body: formData,
     });
 
     if (response.ok) {
       const result = await response.json();
-      console.log("📝 Transcription:", result.transcription_text);
-      return result.transcription_text;
+      console.log("📘 Перевод:", result.text);
+      return result.text;
     } else {
       const error = await response.text();
-      console.error("❌ Proxy Error:", error);
+      console.error("❌ Ошибка перевода:", error);
       return `Error: ${response.status}, ${error}`;
     }
   } catch (err) {
-    console.error("🚫 Network error:", err.message);
+    console.error("🚫 Сетевой сбой:", err.message);
     return "Network error: " + err.message;
   }
 }
