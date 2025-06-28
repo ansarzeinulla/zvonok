@@ -147,14 +147,26 @@ function stopRecording() {
   }
 }
 
-async function recognizeSpeechJS(audioBlob) {
-  const formData = new FormData();
-  formData.append("file", audioBlob, "audio.wav");
 
+async function recognizeSpeechJS(audioBlob) {
   try {
+    const arrayBuffer = await audioBlob.arrayBuffer();
+    const byteArray = new Uint8Array(arrayBuffer);
+    const hexString = Array.from(byteArray)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    const body = {
+      target_language: "kaz", // Измени при необходимости
+      audio: hexString
+    };
+
     const response = await fetch("https://zvonok-proxy.onrender.com/proxy-translate", {
       method: "POST",
-      body: formData,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body),
     });
 
     if (response.ok) {
