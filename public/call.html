@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>On a Call</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2em;
+    }
+    #transcript {
+      font-size: 1.5em;
+      margin-top: 1em;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <h1>📞 On a Call</h1>
+  <p id="transcript">Transcription will appear here...</p>
+
+  <script>
+    let i = 0;
+    setInterval(() => {
+      const el = document.getElementById('transcript');
+      el.textContent = (i++ % 2 === 0)
+        ? "Hello! Hello! Hello!"
+        : "Hello again!";
+    }, 3000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Call Lobby</title>
+</head>
+
+<body>
+  <h1>📞 WebRTC Call</h1>
+  <button onclick="startCall()">Start Call</button>
+  <button onclick="joinCall()">Join Call</button>
+  <p id="callId"></p>
+  <button onclick="startRecording()">Start</button>
+  <button onclick="stopRecording()">Stop</button>
+  <p id="transcript">Waiting for transcription...</p>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <!-- Your config -->
+  <script src="/firebase-config.js"></script>
+  <script src="/rtc.js"></script>
+  <script>
+    async function startCall() {
+      const callId = await createCall();
+      document.getElementById('callId').textContent = "Share this ID: " + callId;
+    }
+
+    async function joinCall() {
+      const callId = prompt("Enter Call ID:");
+      if (callId) {
+        await answerCall(callId);
+      }
+    }
+  </script>
+</body>
+</html>
