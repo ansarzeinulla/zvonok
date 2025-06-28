@@ -1,36 +1,48 @@
 const express = require('express');
 const multer = require('multer');
 const axios = require('axios');
+const cors = require('cors');
+const FormData = require('form-data');
 const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
+app.use(cors()); // ✅ Разрешаем CORS для всех доменов
 
-const YOUR_API_KEY = 'TezIz5eXyJsMz7LvcXU_eg'; // Replace with real token
+const YOUR_API_KEY = 'TezIz5eXyJsMz7LvcXU_eg'; // ✅ Твой реальный API-ключ
 
 app.post('/proxy-transcribe', upload.single('file'), async (req, res) => {
   try {
-    const fileStream = fs.createReadStream(req.file.path);
+    const form = new FormData();
+    const filePath = path.join(__dirname, req.file.path);
+
+    form.append('file', fs.createReadStream(filePath), {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+    });
 
     const response = await axios.post(
       'https://mangisoz.nu.edu.kz/external-api/v1/transcript/transcript_audio/',
-      {
-        file: fileStream,
-      },
+      form,
       {
         headers: {
           Authorization: `Bearer ${YOUR_API_KEY}`,
-          'Content-Type': 'multipart/form-data',
+          ...form.getHeaders(),
         },
       }
     );
 
+    fs.unlink(filePath, () => {}); // ✅ Удаляем временный файл после использования
+
     res.json(response.data);
   } catch (err) {
+    console.error('❌ Proxy Error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(3000, () => {
-  console.log('Proxy running on http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Proxy running on http://localhost:${PORT}`);
 });

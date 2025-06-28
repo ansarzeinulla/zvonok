@@ -152,7 +152,7 @@ async function recognizeSpeechJS(audioBlob) {
   formData.append("file", audioBlob, "audio.wav");
 
   try {
-    const response = await fetch("https://<your-project>.cloudfunctions.net/transcribeAudio", {
+    const response = await fetch("https://zvonok-proxy.onrender.com/transcribeAudio", {
     method: "POST",
     body: formData,
     });
